@@ -8,6 +8,9 @@
 
 #include "rtsp_demo.h"
 #include "sample_comm.h"
+#include <rk_common.h>
+#include <rk_comm_vi.h>
+#include <rk_comm_venc.h>
 
 static RK_S32 g_s32FrameCnt = -1;
 static RK_U32 g_u32Bitrate = 10 * 1024;
@@ -43,8 +46,8 @@ static void *GetMediaBuffer0(void *arg) {
 			if (g_rtsplive && g_rtsp_session) {
 				pData = RK_MPI_MB_Handle2VirAddr(stFrame.pstPack->pMbBlk);
 				rtsp_tx_video(g_rtsp_session, pData, stFrame.pstPack->u32Len,
-				              stFrame.pstPack->u64PTS);
-				rtsp_do_event(g_rtsplive);
+				              stFrame.pstPack->u64PTS);			// update rtsp data
+				rtsp_do_event(g_rtsplive);	// streaming
 			}
 
 			RK_U64 nowUs = TEST_COMM_GetNowUs();
@@ -257,6 +260,7 @@ int main(int argc, char *argv[]) {
 	g_rtsplive = create_rtsp_demo(554);
 	g_rtsp_session = rtsp_new_session(g_rtsplive, "/live/0");
 	if (enCodecType == RK_VIDEO_ID_AVC) {
+		// set rtsp attribute
 		rtsp_set_video(g_rtsp_session, RTSP_CODEC_ID_VIDEO_H264, NULL, 0);
 	} else if (enCodecType == RK_VIDEO_ID_HEVC) {
 		rtsp_set_video(g_rtsp_session, RTSP_CODEC_ID_VIDEO_H265, NULL, 0);
@@ -264,6 +268,7 @@ int main(int argc, char *argv[]) {
 		printf("not support other type\n");
 		return -1;
 	}
+	// synchronization rtsp timestamp
 	rtsp_sync_video_ts(g_rtsp_session, rtsp_get_reltime(), rtsp_get_ntptime());
 
 	if (RK_MPI_SYS_Init() != RK_SUCCESS) {
@@ -303,7 +308,7 @@ int main(int argc, char *argv[]) {
 	pthread_join(&main_thread, NULL);
 
 	if (g_rtsplive)
-		rtsp_del_demo(g_rtsplive);
+		rtsp_del_demo(g_rtsplive);		// delete rtsp demo
 
 	s32Ret = RK_MPI_SYS_UnBind(&stSrcChn, &stDestChn);
 	if (s32Ret != RK_SUCCESS) {

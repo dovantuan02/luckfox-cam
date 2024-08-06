@@ -6,6 +6,8 @@
 #include "audio.h"
 #include "rockiva.h"
 
+#include "app_dbg.h"
+
 #define HAS_VO 0
 #if HAS_VO
 #include <rk_mpi_vo.h>
@@ -116,6 +118,7 @@ static void *get_vi_send_vo(void *arg) {
 #endif
 
 static void *rkipc_get_venc_0(void *arg) {
+	APP_DBG("#Start %s thread, arg:%p\n", __func__, arg);
 	LOG_DEBUG("#Start %s thread, arg:%p\n", __func__, arg);
 	prctl(PR_SET_NAME, "RkipcVenc0", 0, 0, 0);
 	VENC_STREAM_S stFrame;
@@ -135,7 +138,7 @@ static void *rkipc_get_venc_0(void *arg) {
 			// LOG_DEBUG("Count:%d, Len:%d, PTS is %" PRId64", enH264EType is %d\n", loopCount,
 			// stFrame.pstPack->u32Len, stFrame.pstPack->u64PTS,
 			// stFrame.pstPack->DataType.enH264EType);
-
+			/*
 			if (g_rtsplive && g_rtsp_session_0) {
 				pthread_mutex_lock(&g_rtsp_mutex);
 				rtsp_tx_video(g_rtsp_session_0, data, stFrame.pstPack->u32Len,
@@ -143,6 +146,7 @@ static void *rkipc_get_venc_0(void *arg) {
 				rtsp_do_event(g_rtsplive);
 				pthread_mutex_unlock(&g_rtsp_mutex);
 			}
+			*/
 			if ((stFrame.pstPack->DataType.enH264EType == H264E_NALU_IDRSLICE) ||
 			    (stFrame.pstPack->DataType.enH264EType == H264E_NALU_ISLICE) ||
 			    (stFrame.pstPack->DataType.enH265EType == H265E_NALU_IDRSLICE) ||
@@ -284,7 +288,7 @@ static void *rkipc_get_vi_draw_send_venc(void *arg) {
 }
 
 static void *rkipc_get_venc_1(void *arg) {
-	LOG_DEBUG("#Start %s thread, arg:%p\n", __func__, arg);
+	APP_DBG("#Start %s thread, arg:%p\n", __func__, arg);
 	prctl(PR_SET_NAME, "RkipcVenc1", 0, 0, 0);
 	VENC_STREAM_S stFrame;
 	VI_CHN_STATUS_S stChnStatus;
@@ -297,9 +301,12 @@ static void *rkipc_get_venc_1(void *arg) {
 		ret = RK_MPI_VENC_GetStream(VIDEO_PIPE_1, &stFrame, 1000);
 		if (ret == RK_SUCCESS) {
 			void *data = RK_MPI_MB_Handle2VirAddr(stFrame.pstPack->pMbBlk);
-			// LOG_INFO("Count:%d, Len:%d, PTS is %" PRId64", enH264EType is %d\n", loopCount,
+			stream_get_data((uint8_t*)data, stFrame.pstPack->u32Len);
+
+			// APP_DBG("Count:%d, Len:%d, PTS is %" PRId64", enH264EType is %d\n", loopCount,
 			// stFrame.pstPack->u32Len, stFrame.pstPack->u64PTS,
 			// stFrame.pstPack->DataType.enH264EType);
+			/*
 			if (g_rtsplive && g_rtsp_session_1) {
 				pthread_mutex_lock(&g_rtsp_mutex);
 				rtsp_tx_video(g_rtsp_session_1, data, stFrame.pstPack->u32Len,
@@ -307,6 +314,7 @@ static void *rkipc_get_venc_1(void *arg) {
 				rtsp_do_event(g_rtsplive);
 				pthread_mutex_unlock(&g_rtsp_mutex);
 			}
+			*/
 			if ((stFrame.pstPack->DataType.enH264EType == H264E_NALU_IDRSLICE) ||
 			    (stFrame.pstPack->DataType.enH264EType == H264E_NALU_ISLICE) ||
 			    (stFrame.pstPack->DataType.enH265EType == H265E_NALU_IDRSLICE) ||

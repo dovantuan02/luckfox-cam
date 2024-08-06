@@ -1,6 +1,10 @@
 // Copyright 2021 Rockchip Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <errno.h>
 #include <fcntl.h>
 #include <getopt.h>
@@ -46,3 +50,7 @@ long long rkipc_get_curren_time_ms();
 char *get_time_string();
 int read_cmdline_to_buf(void *buf, int len);
 long get_cmd_val(const char *string, int len);
+
+#ifdef __cplusplus
+}
+#endif

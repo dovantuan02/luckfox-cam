@@ -493,10 +493,10 @@ IM_API IM_STATUS impalette(rga_buffer_t src, rga_buffer_t dst, rga_buffer_t lut,
  *
  * @returns success or else negative error code.
  */
-IM_API IM_STATUS improcess(rga_buffer_t src, rga_buffer_t dst, rga_buffer_t pat,
-                           im_rect srect, im_rect drect, im_rect prect,
-                           int acquire_fence_fd, int *release_fence_fd,
-                           im_opt_t *opt_ptr, int usage);
+// IM_API IM_STATUS improcess(rga_buffer_t src, rga_buffer_t dst, rga_buffer_t pat,
+//                            im_rect srect, im_rect drect, im_rect prect,
+//                            int acquire_fence_fd, int *release_fence_fd,
+//                            im_opt_t *opt_ptr, int usage);
 
 /**
  * make border
@@ -528,14 +528,14 @@ IM_API IM_STATUS immakeBorder(rga_buffer_t src, rga_buffer_t dst, int top,
 
 #endif /* #ifdef __cplusplus */
 
-IM_C_API IM_STATUS immosaic(const rga_buffer_t image, im_rect rect,
-                            int mosaic_mode, int sync);
-IM_C_API IM_STATUS imosd(const rga_buffer_t osd, const rga_buffer_t dst,
-                         const im_rect osd_rect, im_osd_t *osd_config,
-                         int sync);
-IM_C_API IM_STATUS improcess(rga_buffer_t src, rga_buffer_t dst,
-                             rga_buffer_t pat, im_rect srect, im_rect drect,
-                             im_rect prect, int usage);
+// IM_C_API IM_STATUS immosaic(const rga_buffer_t image, im_rect rect,
+//                             int mosaic_mode, int sync);
+// IM_C_API IM_STATUS imosd(const rga_buffer_t osd, const rga_buffer_t dst,
+//                          const im_rect osd_rect, im_osd_t *osd_config,
+//                          int sync);
+// IM_C_API IM_STATUS improcess(rga_buffer_t src, rga_buffer_t dst,
+//                              rga_buffer_t pat, im_rect srect, im_rect drect,
+//                              im_rect prect, int usage);
 
 /* Start: Symbols reserved for compatibility with macro functions */
 IM_C_API IM_STATUS imcopy_t(const rga_buffer_t src, rga_buffer_t dst, int sync);

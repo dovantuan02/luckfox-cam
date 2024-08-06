@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
+set(CMAKE_CXX_STANDARD 17)
+
+add_definitions(-DGCM)
+
 include_directories(${PROJECT_SOURCE_DIR}/./include
 					${CMAKE_SYSROOT}/usr/include/rkaiq/
 					${CMAKE_SYSROOT}/usr/include/rkaiq/uAPI
@@ -12,6 +16,9 @@ include_directories(${PROJECT_SOURCE_DIR}/./include
 					${CMAKE_SYSROOT}/usr/include/libdrm
 					${WPA_SUPPLICANT_INCLUDE_DIRS}
 					)
+
+# include_directories(/home/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/arm-rockchip830-linux-uclibcgnueabihf/include/c++/8.3.0)
+# aux_source_directory(/home/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/arm-rockchip830-linux-uclibcgnueabihf/include/c++/8.3.0)
 
 aux_source_directory(./ SRCS)
 aux_source_directory(audio SRCS)
@@ -31,7 +38,14 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/common/rockiva SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/common/event SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/common/region_clip SRCS)
 
-include_directories(audio
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc SRCS)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/ak SRCS)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/common SRCS)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/sys SRCS)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/WebRTC SRCS)
+
+include_directories(
+					audio
 					${PROJECT_SOURCE_DIR}/common/isp/rv1106
 					video
 					server
@@ -51,9 +65,39 @@ include_directories(audio
 					${PROJECT_SOURCE_DIR}/common/region_clip
 					)
 
+
+include_directories(
+						${PROJECT_SOURCE_DIR}/src/rv1103_ipc
+						${PROJECT_SOURCE_DIR}/src/rv1103_ipc/ak
+						${PROJECT_SOURCE_DIR}/src/rv1103_ipc/common
+						${PROJECT_SOURCE_DIR}/src/rv1103_ipc/sys
+						${PROJECT_SOURCE_DIR}/src/rv1103_ipc/WebRTC
+						)
+
+include_directories(
+					${PROJECT_SOURCE_DIR}/lib/libdatachannel/include
+					${PROJECT_SOURCE_DIR}/lib/libdatachannel/include/impl
+					${PROJECT_SOURCE_DIR}/lib/libdatachannel/include/rtc
+					${PROJECT_SOURCE_DIR}/lib/libdatachannel/include/internal
+					${PROJECT_SOURCE_DIR}/lib/libdatachannel/include/plog
+					
+)
+# OpenSSL include 
+include_directories(/home/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h/include)
+# include_directories(/home/project/app/rkipc/rkipc/lib/libdatachannel/include/crypto/include)
+
 link_directories(${PROJECT_SOURCE_DIR}/lib/arm-rockchip830-linux-uclibcgnueabihf)
+link_directories(/home/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h)	# OpenSSL
+link_directories(${PROJECT_SOURCE_DIR}/lib/libdatachannel/lib)
+
+set(CMAKE_PREFIX_PATH "/home/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h")
+find_package(OpenSSL REQUIRED)
+if(NOT OPENSSL_FOUND)
+    message(FATAL "Cannot find OpenSSL, please check environment")
+endif()
 
 add_definitions(-DISP_HW_V32)
+
 #add_definitions(-g -ggdb)
 # add_definitions(-Os)
 
@@ -62,7 +106,11 @@ add_definitions(-DISP_HW_V32)
 # link_libraries(asan)
 
 add_executable(${PROJECT_NAME} ${SRCS})
+
 target_link_libraries(${PROJECT_NAME} pthread rockit rockchip_mpp rkaiq rtsp rkaudio_detect aec_bf_process wpa_client m rkmuxer freetype rockiva iconv rknnmrt rga stdc++ rksysutils)
+# target_link_libraries(${PROJECT_NAME} thread mutex condition_variable queue functional string)
+target_link_libraries(${PROJECT_NAME}  ssl crypto)
+target_link_libraries(${PROJECT_NAME} datachannel juice srtp2 usrsctp)
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES rkipc-300w.ini DESTINATION share)
@@ -73,3 +121,4 @@ install(PROGRAMS RkLunch-stop.sh DESTINATION bin)
 install(FILES ${PROJECT_SOURCE_DIR}/common/osd/image.bmp DESTINATION share)
 install(FILES ${PROJECT_SOURCE_DIR}/common/osd/simsun_en.ttf DESTINATION share)
 install(FILES ${PROJECT_SOURCE_DIR}/lib/arm-rockchip830-linux-uclibcgnueabihf/libwpa_client.so DESTINATION lib)
+install(FILES ${PROJECT_SOURCE_DIR}/lib/libdatachannel/lib/libdatachannel.so DESTINATION lib)

@@ -1,3 +1,6 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
 int rk_isp_init(int cam_id, char *iqfile_path);
 int rk_isp_deinit(int cam_id);
 int rk_isp_group_init(int cam_group_id, char *iqfile_path);
@@ -100,3 +103,7 @@ int rk_isp_af_zoom_out(int cam_id);
 int rk_isp_af_focus_in(int cam_id);
 int rk_isp_af_focus_out(int cam_id);
 int rk_isp_af_focus_once(int cam_id);
+
+#ifdef __cplusplus
+}
+#endif

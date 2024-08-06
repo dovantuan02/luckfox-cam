@@ -23,7 +23,7 @@
 
 #include "mali_osk_types.h"
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -319,7 +319,7 @@ extern "C" {
 		kfree(lock);
 	}
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

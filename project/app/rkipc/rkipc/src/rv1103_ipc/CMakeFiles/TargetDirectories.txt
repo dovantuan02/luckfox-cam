@@ -1,0 +1,7 @@
+/home/project/app/rkipc/rkipc/src/rv1103_ipc/CMakeFiles/Project.dir
+/home/project/app/rkipc/rkipc/src/rv1103_ipc/CMakeFiles/edit_cache.dir
+/home/project/app/rkipc/rkipc/src/rv1103_ipc/CMakeFiles/rebuild_cache.dir
+/home/project/app/rkipc/rkipc/src/rv1103_ipc/CMakeFiles/list_install_components.dir
+/home/project/app/rkipc/rkipc/src/rv1103_ipc/CMakeFiles/install.dir
+/home/project/app/rkipc/rkipc/src/rv1103_ipc/CMakeFiles/install/local.dir
+/home/project/app/rkipc/rkipc/src/rv1103_ipc/CMakeFiles/install/strip.dir

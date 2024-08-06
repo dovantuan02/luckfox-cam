@@ -19,6 +19,10 @@
 #ifndef _IPWIRELESS_CS_NETWORK_H_
 #define _IPWIRELESS_CS_NETWORK_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <linux/types.h>
 
 struct ipw_network;
@@ -50,5 +54,9 @@ void ipwireless_ppp_close(struct ipw_network *net);
 int ipwireless_ppp_channel_index(struct ipw_network *net);
 int ipwireless_ppp_unit_number(struct ipw_network *net);
 int ipwireless_ppp_mru(const struct ipw_network *net);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

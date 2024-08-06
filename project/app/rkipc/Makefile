@@ -78,13 +78,16 @@ ifeq ($(PKG_BIN),)
 $(error ### $(CURRENT_DIR): PKG_BIN is NULL, Please Check !!!)
 endif
 
+# export OPENSSL_ROOT_DIR = /home/tuan/luckfox-pico/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h
+# export OPENSSL_LIBRARIES = /home/tuan/luckfox-pico/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h
 all: $(PKG_TARGET)
 	@echo "build $(PKG_NAME) done"
 
 rkipc-build:
 	@echo "RK_APP_CHIP is $(RK_APP_CHIP)"
 	@echo "RK_APP_TYPE is $(RK_APP_TYPE)"
-	rm -rf $(PKG_BIN) $(PKG_BUILD); \
+	@echo "$(PKG_BIN)/* $(PKG_BUILD)"
+	rm -rf $(PKG_BIN)/* $(PKG_BUILD); \
 	mkdir -p $(PKG_BIN);
 	mkdir -p $(PKG_BUILD);
 	pushd $(PKG_BUILD)/; \
@@ -93,7 +96,7 @@ rkipc-build:
 			-DCMAKE_C_COMPILER=$(RK_APP_CROSS)-gcc \
 			-DCMAKE_CXX_COMPILER=$(RK_APP_CROSS)-g++ \
 			-DCMAKE_INSTALL_PREFIX="$(CURRENT_DIR)/$(PKG_BIN)" \
-			-DCMAKE_COLOR_MAKEFILE=OFF \
+			-DCMAKE_COLOR_MAKEFILE=ON \
 			-DCMAKE_SYSTEM_NAME=Linux \
 			$(RK_RKIPC_CONFIG) \
 			$(PKG_CONF_OPTS) ;\
@@ -109,7 +112,8 @@ rkfsmk-build:
 	@test ! -d $(RK_APP_COMPONENT)/rkfsmk || make -C $(RK_APP_COMPONENT)/rkfsmk
 
 clean:
-	@rm -rf $(PKG_BIN) $(PKG_BUILD)
+	rm -rf $(PKG_BIN)/* $(PKG_BUILD)
+	rm -rf CMakeCache.txt;
 
 distclean: clean
 

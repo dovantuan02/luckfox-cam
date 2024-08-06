@@ -51,12 +51,12 @@ IM_API rga_buffer_handle_t importbuffer_physicaladdr(uint64_t pa, int size);
  * @return rga_buffer_handle_t
  */
 #ifdef __cplusplus
-IM_API rga_buffer_handle_t importbuffer_fd(int fd, int width, int height,
-                                           int format);
-IM_API rga_buffer_handle_t importbuffer_virtualaddr(void *va, int width,
-                                                    int height, int format);
-IM_API rga_buffer_handle_t importbuffer_physicaladdr(uint64_t pa, int width,
-                                                     int height, int format);
+// IM_API rga_buffer_handle_t importbuffer_fd(int fd, int width, int height,
+//                                            int format);
+// IM_API rga_buffer_handle_t importbuffer_virtualaddr(void *va, int width,
+//                                                     int height, int format);
+// IM_API rga_buffer_handle_t importbuffer_physicaladdr(uint64_t pa, int width,
+//                                                      int height, int format);
 #endif
 
 /**
@@ -69,12 +69,12 @@ IM_API rga_buffer_handle_t importbuffer_physicaladdr(uint64_t pa, int width,
  *
  * @return rga_buffer_handle_t
  */
-IM_EXPORT_API rga_buffer_handle_t importbuffer_fd(int fd,
-                                                  im_handle_param_t *param);
-IM_EXPORT_API rga_buffer_handle_t
-importbuffer_virtualaddr(void *va, im_handle_param_t *param);
-IM_EXPORT_API rga_buffer_handle_t
-importbuffer_physicaladdr(uint64_t pa, im_handle_param_t *param);
+// IM_EXPORT_API rga_buffer_handle_t importbuffer_fd(int fd,
+//                                                   im_handle_param_t *param);
+// IM_EXPORT_API rga_buffer_handle_t
+// importbuffer_virtualaddr(void *va, im_handle_param_t *param);
+// IM_EXPORT_API rga_buffer_handle_t
+// importbuffer_physicaladdr(uint64_t pa, im_handle_param_t *param);
 
 /**
  * Import external buffers into RGA driver.
@@ -192,9 +192,9 @@ IM_C_API rga_buffer_t wrapbuffer_fd_t(int fd, int width, int height,
 #undef wrapbuffer_handle
 IM_API rga_buffer_t wrapbuffer_handle(rga_buffer_handle_t handle, int width,
                                       int height, int format);
-IM_API rga_buffer_t wrapbuffer_handle(rga_buffer_handle_t handle, int width,
-                                      int height, int format, int wstride,
-                                      int hstride);
+// IM_API rga_buffer_t wrapbuffer_handle(rga_buffer_handle_t handle, int width,
+//                                       int height, int format, int wstride,
+//                                       int hstride);
 #endif
 
 #endif /* #ifndef _im2d_buffer_h_ */

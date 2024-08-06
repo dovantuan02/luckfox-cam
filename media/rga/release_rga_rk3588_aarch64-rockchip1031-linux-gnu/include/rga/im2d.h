@@ -24,8 +24,9 @@
 extern "C" {
 #endif
 
-#include "im2d_type.h"
 #include "im2d_version.h"
+#include "im2d_type.h"
+
 
 #ifndef IM_API
 #define IM_API /* define API export as needed */

@@ -23,6 +23,10 @@
 #include "common.h"
 #include "rkmuxer.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define RKIPC_MAX_FORMAT_ID_LEN 8
 #define RKIPC_MAX_VOLUME_LEN 11
 #define RKIPC_MAX_FILE_PATH_LEN 256
@@ -218,4 +222,5 @@ int rkipc_storage_dev_mount_status_get();
 #ifdef __cplusplus
 }
 #endif
+
 #endif

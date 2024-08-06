@@ -1,6 +1,10 @@
 // Copyright 2021 Rockchip Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "iniparser.h"
 
 extern dictionary *g_ini_d_;
@@ -13,3 +17,7 @@ int rk_param_save();
 int rk_param_init(char *ini_path);
 int rk_param_deinit();
 int rk_param_reload();
+
+#ifdef __cplusplus
+}
+#endif

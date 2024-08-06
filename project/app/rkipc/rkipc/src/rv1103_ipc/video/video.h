@@ -1,6 +1,10 @@
 // Copyright 2022 Rockchip Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "common.h"
 #include "isp.h"
 #include "osd.h"
@@ -25,8 +29,11 @@
 
 #include "rk_comm_tde.h"
 #include "rk_mpi_tde.h"
-#include <rga/im2d.h>
 #include <rga/rga.h>
+#include <rga/im2d.h>
+
+void video_enable_run();
+void video_disable_run();
 
 int rk_video_init();
 int rk_video_deinit();
@@ -75,3 +82,6 @@ int rk_video_set_snapshot_interval_ms(int value);
 int rk_video_get_jpeg_resolution(char **value);
 int rk_video_set_jpeg_resolution(const char *value);
 int rk_take_photo();
+#ifdef __cplusplus
+}
+#endif

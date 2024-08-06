@@ -7,7 +7,7 @@
 ## SDK Updatelog
 * Current version V1.2
 1. Added compatibility for Ubuntu system
-2. Restored support for busybox, allowing users to choose between busybox, buildroot, and Ubuntu according to their needs
+2. Restored support for busybox, allowing users to choosefew between busybox, buildroot, and Ubuntu according to their needs
 3. Added Ubuntu root file submodule and support for switching between GitHub and Gitee sources
 4. Added support for exFAT file system
 5. Partial bug fixes

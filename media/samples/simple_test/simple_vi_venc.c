@@ -9,6 +9,7 @@
 
 #include "sample_comm.h"
 
+
 static FILE *venc0_file;
 static RK_S32 g_s32FrameCnt = -1;
 static bool quit = false;
@@ -64,7 +65,6 @@ static void *GetMediaBuffer0(void *arg) {
 
 		usleep(10 * 1000);
 	}
-
 	if (venc0_file)
 		fclose(venc0_file);
 
@@ -73,9 +73,9 @@ static void *GetMediaBuffer0(void *arg) {
 }
 
 static RK_S32 test_venc_init(int chnId, int width, int height, RK_CODEC_ID_E enType) {
-	printf("========%s========\n", __func__);
+	printf("========%s========fefe\n", __func__);
 	VENC_RECV_PIC_PARAM_S stRecvParam;
-	VENC_CHN_ATTR_S stAttr;
+	VENC_CHN_ATTR_S stAttr;   
 	memset(&stAttr, 0, sizeof(VENC_CHN_ATTR_S));
 
 	stAttr.stRcAttr.enRcMode = VENC_RC_MODE_H264CBR;

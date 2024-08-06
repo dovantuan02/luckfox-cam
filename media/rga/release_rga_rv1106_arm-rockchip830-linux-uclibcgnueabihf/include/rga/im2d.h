@@ -20,8 +20,8 @@
 #ifndef _im2d_h_
 #define _im2d_h_
 
-#include "im2d_type.h"
 #include "im2d_version.h"
+#include "im2d_type.h"
 
 #include "im2d_buffer.h"
 #include "im2d_common.h"

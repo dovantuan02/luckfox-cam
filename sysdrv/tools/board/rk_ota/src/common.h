@@ -20,6 +20,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MISC_PARTITION_NAME_BLOCK "/dev/block/by-name/misc"
 #define MISC_PARTITION_NAME_MTD "misc"
 
@@ -111,5 +115,10 @@ typedef struct {
 
     const char* pass;         //
 } Volume;
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif  // RECOVERY_COMMON_H

@@ -1,6 +1,10 @@
 // Copyright 2021 Rockchip Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void rk_system_init();
 void rk_system_deinit();
 int rk_system_get_deivce_name(const char **value);
@@ -47,3 +51,7 @@ int rk_system_capability_get_image_exposure(char *value);
 int rk_system_capability_get_image_night_to_day(char *value);
 int rk_system_capability_get_image_video_adjustment(char *value);
 int rk_system_capability_get_image_white_blance(char *value);
+
+#ifdef __cplusplus
+}
+#endif

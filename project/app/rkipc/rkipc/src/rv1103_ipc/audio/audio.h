@@ -1,6 +1,10 @@
 // Copyright 2022 Rockchip Electronics Co., Ltd. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int rkipc_audio_rtsp_init();
 int rkipc_ao_init();
 int rkipc_ao_deinit();
@@ -19,3 +23,7 @@ int rk_audio_get_enable_vqe(int stream_id, int *value);
 int rk_audio_set_enable_vqe(int stream_id, int value);
 int rk_audio_get_encode_type(int stream_id, const char **value);
 int rk_audio_set_encode_type(int stream_id, const char *value);
+
+#ifdef __cplusplus
+}
+#endif

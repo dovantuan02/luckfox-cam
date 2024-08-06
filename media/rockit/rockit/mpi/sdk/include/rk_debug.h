@@ -35,7 +35,7 @@ typedef struct rkLOG_LEVEL_CONF_S {
 
 #define RK_PRINT printf
 
-#define CONFIG_RK_LOG_TRACE_SUPPORT 1
+#define CONFIG_RK_LOG_TRACE_SUPPORT 0
 #define DBG_MOD_COMB1(MOD1)                                                    \
   ((RK_ID_BUTT << 24) | (RK_ID_BUTT << 16) | (RK_ID_BUTT << 8) | MOD1)
 #define DBG_MOD_COMB2(MOD1, MOD2)                                              \
