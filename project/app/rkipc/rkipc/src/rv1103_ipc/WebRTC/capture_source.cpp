@@ -25,7 +25,6 @@ CaptureSource::~CaptureSource() {
 
 void CaptureSource::start() {
     sampleTime_us = std::numeric_limits<uint64_t>::max() - sampleDuration_us + 1;
-    // loadNextSample();
 }
 
 void CaptureSource::stop() {

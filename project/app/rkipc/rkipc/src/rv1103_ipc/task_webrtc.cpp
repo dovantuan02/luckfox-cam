@@ -41,37 +41,11 @@
 // WEBRTC
 #include "capture_source.hpp"
 
-// ROCKIT
-#include "audio.h"
-#include "video.h"
-#include "common.h"
-#include "isp.h"
-#include "log.h"
-#include "network.h"
-#include "param.h"
-#include "rockiva.h"
-#include "server.h"
-#include "storage.h"
-#include "system.h"
-
-#ifdef LOG_TAG
-#undef LOG_TAG
-#endif
-#define LOG_TAG "rkipc.c"
-
 using namespace rtc;
 using namespace std;
 using namespace chrono_literals;
 using namespace chrono;
 using json = nlohmann::json;
-
-enum { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
-
-int enable_minilog = 0;
-int rkipc_log_level = LOG_ERROR;
-
-char *rkipc_ini_path_ = NULL;
-char *rkipc_iq_file_path_ = "/etc/iqfiles";
 
 /*		VARIABBLE		*/
 string cam_local_id = "server";
@@ -85,9 +59,6 @@ unordered_map<string, shared_ptr<Client>> clients{};
 
 /// Audio and video stream
 optional<shared_ptr<Stream>> avStream = nullopt;
-
-/// Main dispatch queue
-DispatchQueue MainThread("Main");
 
 #define H264_DIRECTORY	"/mnt"
 #define OPUS_DIRECTORY	"/tmp/audio"
@@ -113,7 +84,7 @@ shared_ptr<ClientTrackData> addAudio(const shared_ptr<PeerConnection> pc,
 									const string msid,
 									const function<void(void)> onOpen);
 
-shared_ptr<Stream> createStream(const string h264Samples, const unsigned fps,
+shared_ptr<Stream> createStream(const unsigned fps,
 								const string opusSamples);
 
 void startStream();
@@ -128,10 +99,6 @@ void *gw_task_webrtc_entry(void *) {
 	APP_DBG("[STARTED] gw_task_webrtc_entry\n");
 	InitLogger(LogLevel::None);
 
-	uint32_t video_channel = 1;
-	uint32_t video_width = 1920;
-	uint32_t video_height = 1080;
-
 	// Sturn server config
 	Configuration ws_config;
 	APP_DBG("STUN SERVER : %s\n", sturn_server.c_str());
@@ -144,36 +111,6 @@ void *gw_task_webrtc_entry(void *) {
 
 	auto ws = std::make_shared<rtc::WebSocket>();
 	websocket_connect(ws, ws_url);
-
-#if AV_ENABLE == 1	
-	APP_DBG("rkipc_ini_path_ is %s, rkipc_iq_file_path_ is %s, rkipc_log_level "
-			"is %d\n",
-			rkipc_ini_path_, rkipc_iq_file_path_, rkipc_log_level);
-	
-
-	rk_param_init(rkipc_ini_path_);
-	rk_network_init(NULL);
-	rk_system_init();
-	if (rk_param_get_int("video.source:enable_npu", 0))
-		rkipc_rockiva_init();
-	if (rk_param_get_int("video.source:enable_aiq", 1)) {
-		rk_isp_init(0, rkipc_iq_file_path_);
-		rk_isp_set_frame_rate(0, rk_param_get_int("isp.0.adjustment:fps", 30));
-		if (rk_param_get_int("isp:init_form_ini", 1))
-			rk_isp_set_from_ini(0);
-	}
-	RK_MPI_SYS_Init();
-
-	rk_param_set_int("video.source:enable_rtsp", 0);		// disable rtsp
-	rk_param_set_int("video.source:enable_venc_0", 0);		// disable vnc 0
-	rk_video_set_output_data_type(1, "H.264");		// config to h.264
-
-	rk_video_init();
-	if (rk_param_get_int("audio.0:enable", 0))
-		rkipc_audio_init();
-	rkipc_server_init();
-	rk_storage_init();
-#endif
 
 	while (1) {
 		/* get messge */
@@ -201,7 +138,6 @@ void *gw_task_webrtc_entry(void *) {
 
 			case GW_WEBRTC_GET_SIGNALING_WEBSOCKET_REG: {
 				APP_DBG_SIG("GW_WEBRTC_GET_SIGNALING_WEBSOCKET_REG\n");
-
 				std::string data((char*) msg->header->payload,msg->header->len);
 				// get_data_dynamic_msg(msg, (uint8_t*)&data, msg->header->len);
 				APP_DBG("WebSockets Receive Message : %s\n", data.c_str());
@@ -226,13 +162,15 @@ void *gw_task_webrtc_entry(void *) {
 					clients.emplace(id, createPeerConnection(ws_config, make_weak_ptr(ws), id));
 				} 
 				else if (type == "answer") {
-					if (auto jt = clients.find(id);
-						jt != clients.end()) {
+					if (auto jt = clients.find(id); jt != clients.end()) {
 						auto pc = jt->second->peerConnection;
 						auto sdp = message["sdp"].get<string>();
 						auto description = Description(sdp, type);
 						pc->setRemoteDescription(description);
 						APP_DBG("Video Start \r\n");
+#if AV_ENABLE == 1
+						task_post_pure_msg(GW_TASK_AV_ID, GW_AV_START_REQ);
+#endif
 					}
 				}
 				
@@ -253,6 +191,9 @@ void websocket_connect(shared_ptr<WebSocket> ws, string url) {
 	/* set callback WebSocket	*/
 	ws->onOpen([](){
 		APP_DBG("Connected WebSocket !!\n");
+#if AV_ENABLE == 1
+		task_post_pure_msg(GW_TASK_AV_ID, GW_AV_INIT_REQ);
+#endif
 	});
 
 	ws->onClosed([](){
@@ -305,19 +246,21 @@ shared_ptr<Client> createPeerConnection(const Configuration &config,
 			4 : FAILED 
 			5 : CLOSE
 		*/
-		APP_DBG("State Peer : %d\n",state);
+		cout << "State Peer :" << state << endl;
 		if (state == PeerConnection::State::Disconnected ||
 			state == PeerConnection::State::Failed ||
 			state == PeerConnection::State::Closed) {
 			// remove disconnected client
 			clients.erase(id);
+#if AV_ENABLE == 1
+			task_post_pure_msg(GW_TASK_AV_ID, GW_AV_STOP_REQ);
+#endif
 		}
 	});
 
 	pc->onGatheringStateChange(
 		[wpc = make_weak_ptr(pc), id, wws](PeerConnection::GatheringState state) {
-		// cout << "Gathering State: " << state << endl;
-		APP_DBG("State Gathering : %d\n",state);
+		cout << "Gathering State: " << state << endl;
 		if (state == PeerConnection::GatheringState::Complete) {
 			if(auto pc = wpc.lock()) {
 				auto description = pc->localDescription();
@@ -339,22 +282,19 @@ shared_ptr<Client> createPeerConnection(const Configuration &config,
 	});
 
 	client->video = addVideo(pc, 102, 1, "video-stream", "stream1", [id, wc = make_weak_ptr(client)]() {
-		MainThread.dispatch([wc]() {
-			if (auto c = wc.lock()) {
+		if (auto c = wc.lock()) {
 				addToStream(c, true);
-			}
-		});
+		};
 		cout << "Video from " << id << " opened" << endl;
 	});
 
 	client->audio = addAudio(pc, 111, 2, "audio-stream", "stream1", [id, wc = make_weak_ptr(client)]() {
-		MainThread.dispatch([wc]() {
-			if (auto c = wc.lock()) {
-				addToStream(c, false);
-			}
-		});
+		if (auto c = wc.lock()) {
+			addToStream(c, false);
+		}
 		cout << "Audio from " << id << " opened" << endl;
 	});
+
 	APP_DBG("DataChannel Create !!\n");
 	auto dc = pc->createDataChannel("ping-pong");
 	dc->onOpen([id, wdc = make_weak_ptr(dc)]() {
@@ -423,7 +363,7 @@ shared_ptr<ClientTrackData> addAudio(const shared_ptr<PeerConnection> pc, const 
 }
 
 /// Create stream
-shared_ptr<Stream> createStream(const string h264Samples, const unsigned fps, const string opusSamples) {
+shared_ptr<Stream> createStream(const unsigned fps, const string opusSamples) {
 	// video source
 	auto video = make_shared<CaptureSource>(fps);
 	// audio source
@@ -494,7 +434,7 @@ void startStream() {
 		}
 	} else {
 		APP_DBG("create stream !\r\n");
-		stream = createStream(H264_DIRECTORY, 20, OPUS_DIRECTORY);
+		stream = createStream(30, OPUS_DIRECTORY);
 		avStream = stream;
 	}
 	stream->start();

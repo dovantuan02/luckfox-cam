@@ -133,12 +133,12 @@ static void *rkipc_get_venc_0(void *arg) {
 		ret = RK_MPI_VENC_GetStream(VIDEO_PIPE_0, &stFrame, 1000);
 		if (ret == RK_SUCCESS) {
 			void *data = RK_MPI_MB_Handle2VirAddr(stFrame.pstPack->pMbBlk);
+			venc_0_handler(data, stFrame.pstPack->u32Len);
 			// fwrite(data, 1, stFrame.pstPack->u32Len, fp);
 			// fflush(fp);
 			// LOG_DEBUG("Count:%d, Len:%d, PTS is %" PRId64", enH264EType is %d\n", loopCount,
 			// stFrame.pstPack->u32Len, stFrame.pstPack->u64PTS,
 			// stFrame.pstPack->DataType.enH264EType);
-			/*
 			if (g_rtsplive && g_rtsp_session_0) {
 				pthread_mutex_lock(&g_rtsp_mutex);
 				rtsp_tx_video(g_rtsp_session_0, data, stFrame.pstPack->u32Len,
@@ -146,7 +146,7 @@ static void *rkipc_get_venc_0(void *arg) {
 				rtsp_do_event(g_rtsplive);
 				pthread_mutex_unlock(&g_rtsp_mutex);
 			}
-			*/
+			
 			if ((stFrame.pstPack->DataType.enH264EType == H264E_NALU_IDRSLICE) ||
 			    (stFrame.pstPack->DataType.enH264EType == H264E_NALU_ISLICE) ||
 			    (stFrame.pstPack->DataType.enH265EType == H265E_NALU_IDRSLICE) ||
@@ -301,7 +301,7 @@ static void *rkipc_get_venc_1(void *arg) {
 		ret = RK_MPI_VENC_GetStream(VIDEO_PIPE_1, &stFrame, 1000);
 		if (ret == RK_SUCCESS) {
 			void *data = RK_MPI_MB_Handle2VirAddr(stFrame.pstPack->pMbBlk);
-			stream_get_data((uint8_t*)data, stFrame.pstPack->u32Len);
+			venc_1_handler(data, stFrame.pstPack->u32Len);
 
 			// APP_DBG("Count:%d, Len:%d, PTS is %" PRId64", enH264EType is %d\n", loopCount,
 			// stFrame.pstPack->u32Len, stFrame.pstPack->u64PTS,
@@ -691,7 +691,8 @@ int rkipc_pipe_0_init() {
 	int frame_max_i_qp = rk_param_get_int("video.0:frame_max_i_qp", 51);
 	int frame_max_qp = rk_param_get_int("video.0:frame_max_qp", 51);
 	int scalinglist = rk_param_get_int("video.0:scalinglist", 0);
-
+	LOG_INFO("video enc 0 : width : %d : height : %d : max width : %d, max height %d\r\n", 
+			video_width, video_height, video_max_width, video_max_height);
 	// VI
 	VI_CHN_ATTR_S vi_chn_attr;
 	memset(&vi_chn_attr, 0, sizeof(vi_chn_attr));
@@ -959,7 +960,7 @@ int rkipc_pipe_0_init() {
 	memset(&stRecvParam, 0, sizeof(VENC_RECV_PIC_PARAM_S));
 	stRecvParam.s32RecvPicNum = -1;
 	RK_MPI_VENC_StartRecvFrame(VIDEO_PIPE_0, &stRecvParam);
-	pthread_create(&venc_thread_0, NULL, rkipc_get_venc_0, NULL);
+
 	// bind
 	vi_chn.enModId = RK_ID_VI;
 	vi_chn.s32DevId = 0;
@@ -970,9 +971,10 @@ int rkipc_pipe_0_init() {
 	ret = RK_MPI_SYS_Bind(&vi_chn, &venc_chn);
 	if (ret)
 		LOG_ERROR("Bind VI and VENC error! ret=%#x\n", ret);
-	else
+	else {
 		LOG_DEBUG("Bind VI and VENC success\n");
-
+		pthread_create(&venc_thread_0, NULL, rkipc_get_venc_0, NULL);
+	}
 	return 0;
 }
 
@@ -1016,7 +1018,7 @@ int rkipc_pipe_1_init() {
 	int frame_max_i_qp = rk_param_get_int("video.1:frame_max_i_qp", 51);
 	int frame_max_qp = rk_param_get_int("video.1:frame_max_qp", 51);
 	int scalinglist = rk_param_get_int("video.1:scalinglist", 0);
-
+	LOG_INFO("video info : width : %d - height : %d \r\n", video_width, video_height);
 	// VI
 	VI_CHN_ATTR_S vi_chn_attr;
 	memset(&vi_chn_attr, 0, sizeof(vi_chn_attr));
@@ -3090,8 +3092,8 @@ int rk_video_init() {
 	enable_rtsp = rk_param_get_int("video.source:enable_rtsp", 1);
 	enable_rtmp = rk_param_get_int("video.source:enable_rtmp", 1);
 	LOG_INFO("enable_jpeg is %d, enable_venc_0 is %d, enable_venc_1 is %d, enable_rtsp is %d, "
-	         "enable_rtmp is %d\n",
-	         enable_jpeg, enable_venc_0, enable_venc_1, enable_rtsp, enable_rtmp);
+	         "enable_rtmp is %d enable_ivs is %d\n",
+	         enable_jpeg, enable_venc_0, enable_venc_1, enable_rtsp, enable_rtmp, enable_ivs);
 
 	g_vi_chn_id = rk_param_get_int("video.source:vi_chn_id", 0);
 	g_enable_vo = rk_param_get_int("video.source:enable_vo", 1);
@@ -3099,7 +3101,7 @@ int rk_video_init() {
 	enable_npu = rk_param_get_int("video.source:enable_npu", 0);
 	enable_wrap = rk_param_get_int("video.source:enable_wrap", 0);
 	enable_osd = rk_param_get_int("osd.common:enable_osd", 0);
-	LOG_DEBUG("g_vi_chn_id is %d, g_enable_vo is %d, g_vo_dev_id is %d, enable_npu is %d, "
+	LOG_INFO("g_vi_chn_id is %d, g_enable_vo is %d, g_vo_dev_id is %d, enable_npu is %d, "
 	          "enable_wrap is %d, enable_osd is %d\n",
 	          g_vi_chn_id, g_enable_vo, g_vo_dev_id, enable_npu, enable_wrap, enable_osd);
 	g_video_run_ = 1;

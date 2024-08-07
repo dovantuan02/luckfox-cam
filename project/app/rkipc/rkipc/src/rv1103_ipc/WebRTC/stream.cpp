@@ -37,6 +37,9 @@ std::mutex mtx_sendSample;
 Stream::Stream(std::shared_ptr<StreamSource> video, std::shared_ptr<StreamSource> audio):
 	std::enable_shared_from_this<Stream>(), video(video), audio(audio) { }
 
+Stream::Stream() {
+	_isRunning = false;
+}
 Stream::~Stream() {
 	stop();
 }
@@ -85,23 +88,24 @@ void Stream::onSample(std::function<void (StreamSourceType, uint64_t, rtc::binar
 	sampleHandler = handler;
 }
 
-void Stream::VideoGetStream(uint8_t *data, int length) {
+void Stream::stream_video(uint8_t *data, int length) {
 	// APP_DBG("Video Get Stream\r\n");
 	if (avStream == nullopt) {
 		(void)data;
 		// APP_DBG("[avStream] is nullopt\r\n");
 		return;
 	}
-	
+
+	if(clients.empty()) {
+		// APP_DBG("No client found !\r\n");
+		return;
+	}
 	auto videoStream = avStream.value();
 	videoStream->video->loadNextSample(data, length);
 	auto sample_capture = (videoStream->video->getSample());
 	videoStream->video->loadNextTime();
 	
-	if(clients.empty()) {
-		sample_capture.clear();
-		return;
-	}
+	
 	for(auto id_client: clients) {
 		auto id = id_client.first;
 		auto client = id_client.second;
@@ -145,9 +149,6 @@ void Stream::start() {
 	startTime = currentTimeInMicroSeconds();
 	audio->start();
 	video->start();
-	// dispatchQueue.dispatch([this]() {
-	//     this->sendSample();
-	// });
 }
 
 void Stream::stop() {
@@ -156,8 +157,14 @@ void Stream::stop() {
 		return;
 	}
 	_isRunning = false;
-	dispatchQueue.removePending();
 	audio->stop();
 	video->stop();
 };
 
+void Stream::start_stream(Stream& instance) {
+	instance.start();
+}
+
+void Stream::stop_stream(Stream& instance) {
+	instance.stop();
+}

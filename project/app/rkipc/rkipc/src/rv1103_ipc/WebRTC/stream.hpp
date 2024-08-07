@@ -10,7 +10,6 @@
 #ifndef stream_hpp
 #define stream_hpp
 
-#include "dispatchqueue.hpp"
 #include "rtc/rtc.hpp"
 
 class StreamSource {
@@ -30,16 +29,16 @@ public:
 };
 
 class Stream: public std::enable_shared_from_this<Stream> {
+public:
     uint64_t startTime = 0;
     std::mutex mutex;
-    DispatchQueue dispatchQueue = DispatchQueue("StreamQueue");
-
     bool _isRunning = false;
-public:
+
     const std::shared_ptr<StreamSource> audio;
     const std::shared_ptr<StreamSource> video;
 
     Stream(std::shared_ptr<StreamSource> video, std::shared_ptr<StreamSource> audio);
+    Stream();
     ~Stream();
 
     enum class StreamSourceType {
@@ -58,7 +57,9 @@ public:
     void onSample(std::function<void (StreamSourceType, uint64_t, rtc::binary)> handler);
     void start();
     void stop();
-    static void VideoGetStream(uint8_t *, int);
+    static void stream_video(uint8_t *, int);
+    static void start_stream(Stream& instance);
+    static void stop_stream(Stream& instance);
     const bool & isRunning = _isRunning;
 };
 

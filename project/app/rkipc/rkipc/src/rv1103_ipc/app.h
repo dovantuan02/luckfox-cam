@@ -45,14 +45,6 @@ enum {
  */
 /*****************************************************************************/
 /* define timer */
-#define GW_WEBRTC_ERASE_CLIENT_NO_ANSWER_TIMEOUT_INTERVAL (40000) /* 40s */
-#define GW_WEBRTC_TRY_CONNECT_SOCKET_INTERVAL			  (10000) /* 10s */
-#define GW_WEBRTC_TRY_GET_EXTERNAL_IP_INTERVAL			  (7000)  /* 7s */
-#define GW_WEBRTC_WAIT_REQUEST_TIMEOUT_INTERVAL			  (20000) /* 20s */
-#define GW_WEBRTC_CLIENT_SEND_PING_INTERVAL				  (10000) /* 10s */
-#define GW_WEBRTC_ERASE_CLIENT_PING_PONG_TIMEOUT_INTERVAL (20000) /* 20s */
-#define GW_WEBRTC_RELEASE_CLIENT_PUSH_TO_TALK_INTERVAL	  (2500)  /* 2.5s */
-
 #define GW_WEBRTC_RECONNECT_WEBSOCKET_INTERVAL			   (5000)
 /* define signal */
 enum {
@@ -61,16 +53,19 @@ enum {
 	GW_WEBRTC_RECONNECT_WEBSOCKET_REG,
 	GW_WEBRTC_SET_SIGNALING_WEBSOCKET_REG,
 	GW_WEBRTC_GET_SIGNALING_WEBSOCKET_REG,
+};
+/*****************************************************************************/
+/*  task GW_TASK_AV define
+ */
+/*****************************************************************************/
+/* define timer */
 
-	GW_WEBRTC_SET_SIGNLING_SERVER_REQ,
-	GW_WEBRTC_GET_SIGNLING_SERVER_REQ,
-	GW_WEBRTC_CHECK_CLIENT_CONNECTED_REQ,
-	GW_WEBRTC_ERASE_CLIENT_REQ,
-	GW_WEBRTC_DBG_IPC_SEND_MESSAGE_REQ,
-	GW_WEBRTC_ON_MESSAGE_CONTROL_DATACHANNEL_REQ,
-	GW_WEBRTC_DATACHANNEL_DOWNLOAD_RELEASE_REQ,
-	GW_WEBRTC_RELEASE_CLIENT_PUSH_TO_TALK,
-	GW_WEBRTC_TRY_GET_STUN_EXTERNAL_IP_REQ,
+/* define signal */
+enum {
+	GW_AV_INIT_REQ,
+	GW_AV_DEINIT_REQ,
+	GW_AV_START_REQ,
+	GW_AV_STOP_REQ
 };
 /*****************************************************************************/
 /*  global define variable

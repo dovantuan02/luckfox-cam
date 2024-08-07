@@ -6,10 +6,10 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-extern void stream_get_data(uint8_t *data, uint32_t len);
-extern int video_init(uint32_t channel, uint32_t width, uint32_t height);
-extern int video_start(uint8_t channel);
-extern int video_stop(uint32_t channel);
+
+extern void venc_0_handler(void *data, uint32_t len);
+extern void venc_1_handler(void *data, uint32_t len);
+
 #ifdef __cplusplus
 }
 #endif

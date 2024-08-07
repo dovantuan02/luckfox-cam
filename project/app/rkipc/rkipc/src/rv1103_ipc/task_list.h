@@ -3,8 +3,7 @@
 
 #include "ak.h"
 #include "message.h"
-
-// #include "task_webrtc.h"
+#include "app_config.h"
 
 /** default if_des_type when get pool memory
  * this define MUST BE coresponding with app.
@@ -17,7 +16,9 @@ enum {
 
 	/* APP TASKS */
 	GW_TASK_WEBRTC_ID,
-
+#if AV_ENABLE == 1
+	GW_TASK_AV_ID,
+#endif
 	/* EOT task ID */
 	AK_TASK_LIST_LEN,
 };
