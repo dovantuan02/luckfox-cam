@@ -3,19 +3,35 @@
 
 #include <iostream>
 #include <optional>
+#include <variant>
 
 #include "message.h"
+
+#include "rtc/rtc.hpp"
+#include "rtc/configuration.hpp" 
+#include "rtc/websocket.hpp" 
 
 #include "opusfileparser.hpp"
 #include "helpers.hpp"
 #include "stream.hpp"
 
+#include "mqtt.hpp"
+
 #include "app_config.h"
 
 using namespace std;
+using namespace rtc;
+using namespace chrono_literals;
+using namespace chrono;
+
+using OptionalPtr = variant<weak_ptr<WebSocket>, weak_ptr<MQTT>>;
 
 extern optional<shared_ptr<Stream>> avStream;
 extern unordered_map<string, shared_ptr<Client>> clients;
+extern shared_ptr<Client> createPeerConnection(const Configuration &config,
+										OptionalPtr optionalPtr, 
+										string id);
+
 extern q_msg_t gw_task_webrtc_mailbox;
 extern void *gw_task_webrtc_entry(void *);
 

@@ -294,6 +294,30 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Project.dir/build.make CMakeFiles/Project.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+task_av.o: task_av.cpp.o
+.PHONY : task_av.o
+
+# target to build an object file
+task_av.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Project.dir/build.make CMakeFiles/Project.dir/task_av.cpp.o
+.PHONY : task_av.cpp.o
+
+task_av.i: task_av.cpp.i
+.PHONY : task_av.i
+
+# target to preprocess a source file
+task_av.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Project.dir/build.make CMakeFiles/Project.dir/task_av.cpp.i
+.PHONY : task_av.cpp.i
+
+task_av.s: task_av.cpp.s
+.PHONY : task_av.s
+
+# target to generate assembly for a file
+task_av.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Project.dir/build.make CMakeFiles/Project.dir/task_av.cpp.s
+.PHONY : task_av.cpp.s
+
 task_list.o: task_list.cpp.o
 .PHONY : task_list.o
 
@@ -394,6 +418,9 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... task_av.o"
+	@echo "... task_av.i"
+	@echo "... task_av.s"
 	@echo "... task_list.o"
 	@echo "... task_list.i"
 	@echo "... task_list.s"

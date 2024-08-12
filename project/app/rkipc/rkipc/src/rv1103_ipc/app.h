@@ -48,12 +48,29 @@ enum {
 #define GW_WEBRTC_RECONNECT_WEBSOCKET_INTERVAL			   (5000)
 /* define signal */
 enum {
-	GW_WEBRTC_SIGNALING_MQTT_REQ = AK_USER_DEFINE_SIG,
+	GW_WEBRTC_SIGNALING_WEBSOCKET_REQ = AK_USER_DEFINE_SIG,
 
 	GW_WEBRTC_RECONNECT_WEBSOCKET_REG,
 	GW_WEBRTC_SET_SIGNALING_WEBSOCKET_REG,
 	GW_WEBRTC_GET_SIGNALING_WEBSOCKET_REG,
+
+	GW_WEBRTC_CREATE_PEER_REG
 };
+/*****************************************************************************/
+/*  task GW_TASK_MQTT define
+ */
+/*****************************************************************************/
+/* define timer */
+#define GW_RECONNECT_MQTT_INTERVAL			   (5000)
+/* define signal */
+enum {
+    GW_WETRTC_CONNECT_MQTT_REG = AK_USER_DEFINE_SIG,
+	GW_WETRTC_DISCONNECT_MQTT_REG,
+	GW_WEBRTC_RECONNECT_MQTT_REG,
+	GW_WEBRTC_SET_SIGNALING_MQTT_REG,
+	GW_WEBRTC_GET_SIGNALING_MQTT_REG,
+};
+
 /*****************************************************************************/
 /*  task GW_TASK_AV define
  */
@@ -62,7 +79,7 @@ enum {
 
 /* define signal */
 enum {
-	GW_AV_INIT_REQ,
+	GW_AV_INIT_REQ = AK_USER_DEFINE_SIG,
 	GW_AV_DEINIT_REQ,
 	GW_AV_START_REQ,
 	GW_AV_STOP_REQ

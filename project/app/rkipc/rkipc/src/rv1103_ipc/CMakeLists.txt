@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_definitions(-DGCM)
-
 include_directories(${PROJECT_SOURCE_DIR}/./include
 					${CMAKE_SYSROOT}/usr/include/rkaiq/
 					${CMAKE_SYSROOT}/usr/include/rkaiq/uAPI
@@ -43,7 +41,7 @@ aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/ak SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/common SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/sys SRCS)
 aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/WebRTC SRCS)
-
+aux_source_directory(${PROJECT_SOURCE_DIR}/src/rv1103_ipc/MQTT SRCS)
 include_directories(
 					audio
 					${PROJECT_SOURCE_DIR}/common/isp/rv1106
@@ -72,6 +70,7 @@ include_directories(
 						${PROJECT_SOURCE_DIR}/src/rv1103_ipc/common
 						${PROJECT_SOURCE_DIR}/src/rv1103_ipc/sys
 						${PROJECT_SOURCE_DIR}/src/rv1103_ipc/WebRTC
+						${PROJECT_SOURCE_DIR}/src/rv1103_ipc/MQTT
 						)
 
 include_directories(
@@ -80,7 +79,10 @@ include_directories(
 					${PROJECT_SOURCE_DIR}/lib/libdatachannel/include/rtc
 					${PROJECT_SOURCE_DIR}/lib/libdatachannel/include/internal
 					${PROJECT_SOURCE_DIR}/lib/libdatachannel/include/plog
-					
+)
+
+include_directories(
+					${PROJECT_SOURCE_DIR}/lib/mqtt/include
 )
 # OpenSSL include 
 include_directories(/home/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h/include)
@@ -88,7 +90,8 @@ include_directories(/home/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h/inc
 
 link_directories(${PROJECT_SOURCE_DIR}/lib/arm-rockchip830-linux-uclibcgnueabihf)
 link_directories(/home/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h)	# OpenSSL
-link_directories(${PROJECT_SOURCE_DIR}/lib/libdatachannel/lib)
+link_directories(${PROJECT_SOURCE_DIR}/lib/libdatachannel/lib)	# libdatachannel
+link_directories(${PROJECT_SOURCE_DIR}/lib/mqtt/lib)
 
 set(CMAKE_PREFIX_PATH "/home/sysdrv/tools/board/toolkits/openssl/openssl-1.1.1h")
 find_package(OpenSSL REQUIRED)
@@ -110,7 +113,8 @@ add_executable(${PROJECT_NAME} ${SRCS})
 target_link_libraries(${PROJECT_NAME} pthread rockit rockchip_mpp rkaiq rtsp rkaudio_detect aec_bf_process wpa_client m rkmuxer freetype rockiva iconv rknnmrt rga stdc++ rksysutils)
 # target_link_libraries(${PROJECT_NAME} thread mutex condition_variable queue functional string)
 target_link_libraries(${PROJECT_NAME}  ssl crypto)
-target_link_libraries(${PROJECT_NAME} datachannel juice srtp2 usrsctp)
+target_link_libraries(${PROJECT_NAME} datachannel juice srtp2 usrsctp)		# libdatachannel
+target_link_libraries(${PROJECT_NAME} paho-mqtt3a paho-mqtt3as paho-mqtt3c paho-mqtt3cs)		# lib static mqtt
 
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 install(FILES rkipc-300w.ini DESTINATION share)

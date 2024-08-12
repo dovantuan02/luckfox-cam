@@ -46,14 +46,10 @@ using namespace std;
 using namespace chrono_literals;
 using namespace chrono;
 using json = nlohmann::json;
-
+using OptionalPtr = variant<weak_ptr<WebSocket>, weak_ptr<MQTT>>;
 /*		VARIABBLE		*/
-string cam_local_id = "server";
-uint16_t cam_port = 8000;
-const string ip_address = "192.168.1.99";
-const string sturn_server = "stun:stun.l.google.com:19302";
-
 template <class T> weak_ptr<T> make_weak_ptr(shared_ptr<T> ptr) { return ptr; }
+
 
 unordered_map<string, shared_ptr<Client>> clients{};
 
@@ -64,13 +60,14 @@ optional<shared_ptr<Stream>> avStream = nullopt;
 #define OPUS_DIRECTORY	"/tmp/audio"
 
 q_msg_t gw_task_webrtc_mailbox;
-std::string camIpPublic = "";
 
 /*		FUNCTION		*/
+
 static void websocket_connect(shared_ptr<WebSocket> ws, string url);
 
 shared_ptr<Client> createPeerConnection(const Configuration &config,
-										weak_ptr<WebSocket> wws, string id);
+										OptionalPtr optionalPtr, 
+										string id);
 
 shared_ptr<ClientTrackData> addVideo(const shared_ptr<PeerConnection> pc,
 									const uint8_t payloadType,
@@ -95,15 +92,20 @@ void *gw_task_webrtc_entry(void *) {
 	ak_msg_t *msg = AK_MSG_NULL;
 
 	wait_all_tasks_started();
-	
+
+	string cam_local_id = "server";
+	uint16_t cam_port = 8000;
+	const string ip_address = "192.168.1.80";
+	const string sturn_server = "stun:stun.l.google.com:19302";
+
 	APP_DBG("[STARTED] gw_task_webrtc_entry\n");
 	InitLogger(LogLevel::None);
 
 	// Sturn server config
-	Configuration ws_config;
+	Configuration config;
 	APP_DBG("STUN SERVER : %s\n", sturn_server.c_str());
-	ws_config.iceServers.emplace_back(sturn_server);  // config sturn server
-	ws_config.disableAutoNegotiation = true;
+	config.iceServers.emplace_back(sturn_server);  // config sturn server
+	config.disableAutoNegotiation = true;
 
 	// WebSocket Url
 	string ws_url = "ws://" + ip_address + ":" + to_string(cam_port) + "/" + cam_local_id;
@@ -159,7 +161,8 @@ void *gw_task_webrtc_entry(void *) {
 				APP_DBG("type : %s\n", type.c_str());
 				if(type == "request") {
 					APP_DBG("Receive Request !\r\n");
-					clients.emplace(id, createPeerConnection(ws_config, make_weak_ptr(ws), id));
+					clients.emplace(id, createPeerConnection(config, make_weak_ptr(ws), id));
+					
 				} 
 				else if (type == "answer") {
 					if (auto jt = clients.find(id); jt != clients.end()) {
@@ -170,12 +173,12 @@ void *gw_task_webrtc_entry(void *) {
 						APP_DBG("Video Start \r\n");
 #if AV_ENABLE == 1
 						task_post_pure_msg(GW_TASK_AV_ID, GW_AV_START_REQ);
-#endif
+#endif // AV_ENABLE
 					}
 				}
 				
 			} break;
-
+			
 			default:
 				break;
 		}
@@ -232,7 +235,8 @@ void websocket_connect(shared_ptr<WebSocket> ws, string url) {
 }
 
 shared_ptr<Client> createPeerConnection(const Configuration &config,
-										weak_ptr<WebSocket> wws, string id) {
+										OptionalPtr optionalPtr, 
+										string id) {
 
 	auto pc = make_shared<PeerConnection>(config);
 	auto client = make_shared<Client>(pc);
@@ -259,7 +263,7 @@ shared_ptr<Client> createPeerConnection(const Configuration &config,
 	});
 
 	pc->onGatheringStateChange(
-		[wpc = make_weak_ptr(pc), id, wws](PeerConnection::GatheringState state) {
+		[wpc = make_weak_ptr(pc), id, optionalPtr](PeerConnection::GatheringState state) {
 		cout << "Gathering State: " << state << endl;
 		if (state == PeerConnection::GatheringState::Complete) {
 			if(auto pc = wpc.lock()) {
@@ -270,12 +274,31 @@ shared_ptr<Client> createPeerConnection(const Configuration &config,
 					{"sdp", string(description.value())}
 				};
 				// Gathering complete, send answer
-				if (auto ws = wws.lock()) {
-					// ws->send(message.dump());
-					task_post_dynamic_msg(GW_TASK_WEBRTC_ID,\
-											GW_WEBRTC_SET_SIGNALING_WEBSOCKET_REG,\
-											(uint8_t*)to_string(message).data(),\
-											to_string(message).size());
+				if (holds_alternative<weak_ptr<WebSocket>>(optionalPtr)) {
+					auto websocket_ptr = get<weak_ptr<WebSocket>>(optionalPtr).lock();
+					if (websocket_ptr) {			// pointer websocket is available 
+						// ws->send(message.dump());
+						task_post_dynamic_msg(GW_TASK_WEBRTC_ID,\
+												GW_WEBRTC_SET_SIGNALING_WEBSOCKET_REG,\
+												(uint8_t*)to_string(message).data(),\
+												to_string(message).size());
+					}
+					else {
+						APP_DBG("websocket_ptr expired !\r\n");
+					}
+				}
+				else if (holds_alternative<weak_ptr<MQTT>>(optionalPtr)) { 
+					auto mqtt_ptr = get<weak_ptr<MQTT>>(optionalPtr).lock();
+					if (mqtt_ptr->MQTT_connection_state()) {			// pointer websocket is available 
+						// ws->send(message.dump());
+						task_post_dynamic_msg(GW_TASK_WEBRTC_ID,\
+												GW_WEBRTC_SET_SIGNALING_MQTT_REG,\
+												(uint8_t*)to_string(message).data(),\
+												to_string(message).size());
+					}
+					else {
+						APP_DBG("mqtt_ptr expired !\r\n");
+					}
 				}
 			}
 		}

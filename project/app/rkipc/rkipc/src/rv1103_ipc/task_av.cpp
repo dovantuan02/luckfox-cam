@@ -105,17 +105,21 @@ void *gw_task_av_entry(void *) {
 				rk_param_set_int("video.source:enable_venc_0", 1);		
 				rk_param_set_int("video.source:enable_venc_1", 0);		// disable vnc 1
 
+				// config video 0
 				rk_video_set_output_data_type(1, "H.264");		// config to h.264 venc 1
-
 				rk_param_set_int("video.1:width", 704);
 			    rk_param_set_int("video.1:height", 576);
 
+				// config video 0
 				rk_video_set_output_data_type(0, "H.264");		// config to h.264 venc 0
 				rk_param_set_int("video.0:width", 1280);
 				rk_param_set_int("video.0:height", 800);
 
+				rk_param_set_int("audio.0:height", 800);
+
 				rk_video_init();
 				if (rk_param_get_int("audio.0:enable", 0)) {
+					APP_DBG("Audio 0 Enable\r\n");
 					rkipc_audio_init();
 				}
 				rkipc_server_init();
@@ -154,3 +158,5 @@ void *gw_task_av_entry(void *) {
 	}
 #endif // AV_ENABLE
 }
+
+

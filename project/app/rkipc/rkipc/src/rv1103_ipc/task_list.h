@@ -16,6 +16,7 @@ enum {
 
 	/* APP TASKS */
 	GW_TASK_WEBRTC_ID,
+	GW_TASK_MQTT_ID,
 #if AV_ENABLE == 1
 	GW_TASK_AV_ID,
 #endif
