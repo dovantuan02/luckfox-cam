@@ -21,8 +21,12 @@ public:
 	bool MQTT_unsubcribe(string topic);
 	bool MQTT_pulish(string topic , string data, uint8_t qos);
 	bool MQTT_connection_state();
-private:
+	void MQTT_conn_lost_handle(void* , char* );
+protected:
 	MQTTClient client;
+private:
+	string mqtt_user;
+	string mqtt_pass;
 };
 
 #endif 

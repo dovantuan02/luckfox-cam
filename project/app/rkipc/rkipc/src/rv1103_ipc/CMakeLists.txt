@@ -112,7 +112,7 @@ add_executable(${PROJECT_NAME} ${SRCS})
 
 target_link_libraries(${PROJECT_NAME} pthread rockit rockchip_mpp rkaiq rtsp rkaudio_detect aec_bf_process wpa_client m rkmuxer freetype rockiva iconv rknnmrt rga stdc++ rksysutils)
 # target_link_libraries(${PROJECT_NAME} thread mutex condition_variable queue functional string)
-target_link_libraries(${PROJECT_NAME}  ssl crypto)
+target_link_libraries(${PROJECT_NAME} ssl crypto)
 target_link_libraries(${PROJECT_NAME} datachannel juice srtp2 usrsctp)		# libdatachannel
 target_link_libraries(${PROJECT_NAME} paho-mqtt3a paho-mqtt3as paho-mqtt3c paho-mqtt3cs)		# lib static mqtt
 

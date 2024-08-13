@@ -8,16 +8,16 @@
 
 using namespace std;
 
-static int MQTT_message_arrived(void* context, char* topcic, int topic_len, MQTTClient_message* m) {
+static int MQTT_message_arrived(void* context, char* topic, int topic_len, MQTTClient_message* m) {
 	APP_DBG("-----%s------\r\n", __func__);
 
 	std::string payload((char*)m->payload, m->payloadlen);
 	// APP_DBG("Payload : %s\r\n", payload.c_str());
 	task_post_dynamic_msg(GW_TASK_MQTT_ID, 
-							GW_WEBRTC_GET_SIGNALING_MQTT_REG, 
+							GW_MQTT_ON_MESS_REG, 
 							(uint8_t*)payload.data(),payload.size());
 
-	MQTTClient_free(topcic);
+	MQTTClient_free(topic);
 	MQTTClient_freeMessage(&m);
 	return 1;
 }
@@ -26,19 +26,40 @@ static void MQTT_delivery_complete(void* context, MQTTClient_deliveryToken dt) {
 	APP_DBG("-----%s------\r\n", __func__);
 }
 
+static void MQTT_conn_lost_callback(void* context, char* cause) {
+	APP_DBG("-----%s------\r\n", __func__);
+	task_post_pure_msg(GW_TASK_MQTT_ID, GW_MQTT_CONNECT_REG);
+}
+
+void MQTT::MQTT_conn_lost_handle(void* context, char* cause) {
+	client = (MQTTClient*)context;
+    MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
+	conn_opts.keepAliveInterval = 10;
+	conn_opts.cleansession = 1;
+	conn_opts.username = mqtt_user.data();
+	conn_opts.password = mqtt_pass.data();
+
+	MQTTClient_connect(client, &conn_opts);
+}
+
 MQTT::MQTT(string host_url, uint16_t port, string client_id) {
 	MQTTClient_create(&client, host_url.data(), client_id.data(), MQTTCLIENT_PERSISTENCE_NONE, NULL);
-	MQTTClient_setCallbacks(client, NULL, NULL, MQTT_message_arrived, MQTT_delivery_complete);
+	MQTTClient_setCallbacks(client, NULL,
+							MQTT_conn_lost_callback, 
+							MQTT_message_arrived, 
+							MQTT_delivery_complete);
 }
 
 MQTT::~MQTT() { }
 
 bool MQTT::MQTT_connnect(string user, string pass) {
+	mqtt_user = user;
+	mqtt_pass = pass;
 	MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 	conn_opts.keepAliveInterval = 10;
 	conn_opts.cleansession = 1;
-	conn_opts.username = user.data();
-	conn_opts.password = pass.data();
+	conn_opts.username = mqtt_user.data();
+	conn_opts.password = mqtt_pass.data();
 	return (MQTTClient_connect(client, &conn_opts) == MQTTCLIENT_SUCCESS);
 }
 

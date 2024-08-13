@@ -9,7 +9,7 @@
 #define APP_ERR_EN		  0
 #define APP_DBG_SIG_EN	  1
 #define APP_DBG_DRIVER_EN 0
-#define APP_LOG_EN		  0
+#define APP_LOG_EN		  1
 
 /* module debug */
 #define SD_DEBUG	 0
@@ -51,10 +51,10 @@
 #endif
 
 #if (APP_LOG_EN == 1)
-#define APP_LOG_INFO	PLOG_INFO_(PLOG_APP_INSTANCE_ID)
-#define APP_LOG_WARNING PLOG_WARNING_(PLOG_APP_INSTANCE_ID)
-#define APP_LOG_ERROR	PLOG_ERROR_(PLOG_APP_INSTANCE_ID)
-#define APP_LOG_FATAL	PLOG_FATAL_(PLOG_APP_INSTANCE_ID)
+#define APP_LOG_INFO(fmt, ...)		__LOG__(fmt, "INFO", ##__VA_ARGS__)
+#define APP_LOG_WARNING(fmt, ...) 	__LOG__(fmt, "WARNING", ##__VA_ARGS__)
+#define APP_LOG_ERROR(fmt, ...)		__LOG__(fmt, "ERROR", ##__VA_ARGS__)
+#define APP_LOG_FATAL(fmt, ...)		__LOG__(fmt, "FATAL", ##__VA_ARGS__)
 #else
 #define APP_LOG_INFO	PLOG_NONE_(PLOG_APP_INSTANCE_ID)
 #define APP_LOG_WARNING PLOG_NONE_(PLOG_APP_INSTANCE_ID)

@@ -56,8 +56,8 @@
 
 enum { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG, LOG_NOTICE };
 
-int enable_minilog = 1;
-int rkipc_log_level = LOG_NOTICE;
+int enable_minilog = 0;
+int rkipc_log_level = LOG_INFO;
 
 char *rkipc_ini_path_ = "/userdata/rkipc.ini";
 char *rkipc_iq_file_path_ = "/etc/iqfiles";

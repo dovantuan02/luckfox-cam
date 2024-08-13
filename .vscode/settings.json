@@ -58,6 +58,7 @@
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
   "editor.tabSize": 4,
   "files.associations": {
+    "*.cpp": "cpp",
     "*.in": "c",
     "sample_comm.h": "c",
     "rk_common.h": "c",
@@ -136,7 +137,21 @@
     "typeindex": "cpp",
     "typeinfo": "cpp",
     "valarray": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "source_location": "cpp",
+    "rope": "cpp",
+    "slist": "cpp",
+    "barrier": "cpp",
+    "compare": "cpp",
+    "concepts": "cpp",
+    "coroutine": "cpp",
+    "latch": "cpp",
+    "numbers": "cpp",
+    "ranges": "cpp",
+    "semaphore": "cpp",
+    "span": "cpp",
+    "stop_token": "cpp",
+    "syncstream": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }

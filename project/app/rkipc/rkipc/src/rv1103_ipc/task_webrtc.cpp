@@ -94,8 +94,7 @@ void *gw_task_webrtc_entry(void *) {
 	wait_all_tasks_started();
 
 	string cam_local_id = "server";
-	uint16_t cam_port = 8000;
-	const string ip_address = "192.168.1.80";
+	uint16_t cam_port = 8089;
 	const string sturn_server = "stun:stun.l.google.com:19302";
 
 	APP_DBG("[STARTED] gw_task_webrtc_entry\n");
@@ -107,18 +106,19 @@ void *gw_task_webrtc_entry(void *) {
 	config.iceServers.emplace_back(sturn_server);  // config sturn server
 	config.disableAutoNegotiation = true;
 
-	// WebSocket Url
-	string ws_url = "ws://" + ip_address + ":" + to_string(cam_port) + "/" + cam_local_id;
-	APP_DBG("Url Websockets : %s\n", ws_url.c_str());
-
 	auto ws = std::make_shared<rtc::WebSocket>();
-	websocket_connect(ws, ws_url);
-
+	string ws_url;
 	while (1) {
 		/* get messge */
 		msg = ak_msg_rev(GW_TASK_WEBRTC_ID);
 
 		switch (msg->header->sig) {
+			case GW_WEBRTC_WEBSOCKET_REQ: {
+				ws_url = std::string((char*)msg->header->payload, msg->header->len);
+				APP_DBG("Url Websockets : %s\n", ws_url.c_str());
+				websocket_connect(ws, ws_url);
+			} break;
+
 			case GW_WEBRTC_RECONNECT_WEBSOCKET_REG: {
 				if (!ws->isOpen()) {
 					APP_DBG_SIG("GW_WEBRTC_RECONNECT_WEBSOCKET_REG\r\n");
@@ -285,19 +285,6 @@ shared_ptr<Client> createPeerConnection(const Configuration &config,
 					}
 					else {
 						APP_DBG("websocket_ptr expired !\r\n");
-					}
-				}
-				else if (holds_alternative<weak_ptr<MQTT>>(optionalPtr)) { 
-					auto mqtt_ptr = get<weak_ptr<MQTT>>(optionalPtr).lock();
-					if (mqtt_ptr->MQTT_connection_state()) {			// pointer websocket is available 
-						// ws->send(message.dump());
-						task_post_dynamic_msg(GW_TASK_WEBRTC_ID,\
-												GW_WEBRTC_SET_SIGNALING_MQTT_REG,\
-												(uint8_t*)to_string(message).data(),\
-												to_string(message).size());
-					}
-					else {
-						APP_DBG("mqtt_ptr expired !\r\n");
 					}
 				}
 			}
