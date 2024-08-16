@@ -54,15 +54,16 @@
 #endif
 #define LOG_TAG "rkipc.c"
 
-enum { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG, LOG_NOTICE };
+enum { LOG_ERROR, LOG_WARN, LOG_INFO, LOG_DEBUG };
 
 int enable_minilog = 0;
-int rkipc_log_level = LOG_INFO;
+int rkipc_log_level = -1;
 
 char *rkipc_ini_path_ = "/userdata/rkipc.ini";
 char *rkipc_iq_file_path_ = "/etc/iqfiles";
 
 q_msg_t gw_task_av_mailbox;
+pthread_mutex_t g_mutex_video;
 
 void *gw_task_av_entry(void *) {
 #if AV_ENABLE == 1
@@ -70,21 +71,24 @@ void *gw_task_av_entry(void *) {
 
 	wait_all_tasks_started();
 	APP_DBG("[STARTED] gw_task_av_entry\n");
-
+	task_post_pure_msg(GW_TASK_AV_ID, GW_AV_INIT_REQ);
 	while (1) {
 		/* get messge */
 		msg = ak_msg_rev(GW_TASK_AV_ID);
 
 		switch (msg->header->sig) {
 			case GW_AV_INIT_REQ: {
+				
 				APP_DBG_SIG("GW_AV_INIT_REQ\r\n");	
 				APP_DBG("rkipc_ini_path_ is %s, rkipc_iq_file_path_ is %s, rkipc_log_level is %d\n",
 						rkipc_ini_path_, rkipc_iq_file_path_, rkipc_log_level);
+						
+				pthread_mutex_lock(&g_mutex_video);
 
 				rk_param_init(rkipc_ini_path_);
 				rk_network_init(NULL);
 				rk_system_init();
-
+				
 				rk_param_set_int("video.source:enable_ivs", 0);
 				rk_param_set_int("video.source:enable_npu", 0);
 				rk_param_set_int("video.source:enable_aiq", 1);
@@ -105,17 +109,11 @@ void *gw_task_av_entry(void *) {
 				rk_param_set_int("video.source:enable_venc_0", 1);		
 				rk_param_set_int("video.source:enable_venc_1", 0);		// disable vnc 1
 
-				// config video 0
-				rk_video_set_output_data_type(1, "H.264");		// config to h.264 venc 1
-				rk_param_set_int("video.1:width", 704);
-			    rk_param_set_int("video.1:height", 576);
+				rk_param_set_int("audio.0:enable", 0);
 
 				// config video 0
 				rk_video_set_output_data_type(0, "H.264");		// config to h.264 venc 0
-				rk_param_set_int("video.0:width", 1280);
-				rk_param_set_int("video.0:height", 800);
-
-				rk_param_set_int("audio.0:height", 800);
+				rk_video_set_resolution(0, "1280*800");
 
 				rk_video_init();
 				if (rk_param_get_int("audio.0:enable", 0)) {
@@ -124,6 +122,8 @@ void *gw_task_av_entry(void *) {
 				}
 				rkipc_server_init();
 				rk_storage_init();
+				
+				pthread_mutex_unlock(&g_mutex_video);
 			} break;
 
 			case GW_AV_DEINIT_REQ: {
@@ -146,7 +146,6 @@ void *gw_task_av_entry(void *) {
 
 			case GW_AV_START_REQ: {
 				APP_DBG_SIG("GW_AV_START_REQ\r\n");
-				// Stream::start_stream();
 			} break;
 
 			case GW_AV_STOP_REQ: {

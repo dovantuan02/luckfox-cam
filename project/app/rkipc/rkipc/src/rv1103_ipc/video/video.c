@@ -45,6 +45,7 @@
 #define RTMP_URL_2 "rtmp://127.0.0.1:1935/live/thirdstream"
 
 pthread_mutex_t g_rtsp_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t g_webrtc_mutex = PTHREAD_MUTEX_INITIALIZER;
 rtsp_demo_handle g_rtsplive = NULL;
 rtsp_session_handle g_rtsp_session_0, g_rtsp_session_1, g_rtsp_session_2;
 static int get_jpeg_cnt = 0;
@@ -133,7 +134,9 @@ static void *rkipc_get_venc_0(void *arg) {
 		ret = RK_MPI_VENC_GetStream(VIDEO_PIPE_0, &stFrame, 1000);
 		if (ret == RK_SUCCESS) {
 			void *data = RK_MPI_MB_Handle2VirAddr(stFrame.pstPack->pMbBlk);
+			pthread_mutex_lock(&g_webrtc_mutex);
 			venc_0_handler(data, stFrame.pstPack->u32Len);
+			pthread_mutex_unlock(&g_webrtc_mutex);
 			// fwrite(data, 1, stFrame.pstPack->u32Len, fp);
 			// fflush(fp);
 			// LOG_DEBUG("Count:%d, Len:%d, PTS is %" PRId64", enH264EType is %d\n", loopCount,

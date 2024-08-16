@@ -32,7 +32,7 @@ void task_init() {
 
 void exit_app(int ret) {
 	APP_DBG("------%s-------\r\n", __func__);
-
+	exit(ret);
 #if AV_ENABLE == 1
 	rk_storage_deinit();
 	rkipc_server_deinit();
@@ -48,6 +48,4 @@ void exit_app(int ret) {
 	rk_network_deinit();
 	rk_param_deinit();
 #endif
-
-	exit(ret);
 }

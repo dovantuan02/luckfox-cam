@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cstdlib>
 
 #include <iomanip>
 #include <cstdio>
@@ -60,7 +61,7 @@ template <class T> weak_ptr<T> make_weak_ptr(shared_ptr<T> ptr) { return ptr; }
 #define MQTT_WS_SET			"WebSocketServer"
 
 void mqtt_message_set(json data);
-
+string command(string command);
 q_msg_t gw_task_mqtt_mailbox;
 
 void *gw_task_mqtt_entry(void *) {
@@ -68,7 +69,7 @@ void *gw_task_mqtt_entry(void *) {
 
 	wait_all_tasks_started();
 	
-	APP_DBG("[STARTED] gw_task_mqtt_entry\n");
+	APP_DBG("[STARTED] %s\n", __func__);
 
 	auto p_mqtt = make_shared<MQTT>(MQTT_HOST, MQTT_PORT, SIGNALING_CLIENT_ID);
 	task_post_pure_msg(GW_TASK_MQTT_ID, GW_MQTT_CONNECT_REG);
@@ -80,8 +81,10 @@ void *gw_task_mqtt_entry(void *) {
 		{
 			case GW_MQTT_CONNECT_REG: {
 				APP_DBG("GW_MQTT_CONNECT_REG\r\n");
+				
 				if (!p_mqtt->MQTT_connnect(MQTT_USER, MQTT_PASS)) {
 					APP_DBG("MQTT connection error !\r\n");
+					timer_set(GW_TASK_MQTT_ID, GW_MQTT_CONNECT_REG, 1000, TIMER_ONE_SHOT);
 					break;
 				}
 				if (!p_mqtt->MQTT_subcribe(MQTT_SUB_TOPIC, SIGNALING_QOS)) {
@@ -105,6 +108,8 @@ void *gw_task_mqtt_entry(void *) {
 			} break;
 
 			case GW_MQTT_ON_MESS_REG: {
+				APP_DBG("%s\r\n", command("ls").c_str());
+				// cout << command("ls") << endl;
 				std::string message((char*)msg->header->payload, msg->header->len);
 				json data = json::parse(message);
 				auto it = data.find("Method");
@@ -158,4 +163,25 @@ void mqtt_message_set(json json_data) {
 			std::cerr << e.what() << '\n';
 		}
 	}
+}
+
+string command(string command) {
+   char buffer[128];
+   string result = "";
+
+   // Open pipe to file
+   FILE* pipe = popen(command.c_str(), "r");
+   if (!pipe) {
+      return "popen failed!";
+   }
+
+   // read till end of process:
+   while (!feof(pipe)) {
+      // use buffer to read and add to result
+      if (fgets(buffer, 128, pipe) != NULL)
+         result += buffer;
+   }
+
+   pclose(pipe);
+   return result;
 }

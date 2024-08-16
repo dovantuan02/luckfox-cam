@@ -97,6 +97,8 @@ void Stream::stream_video(uint8_t *data, int length) {
 	}
 
 	if(clients.empty()) {
+		(void)data;
+		// avStream->stop();
 		// APP_DBG("No client found !\r\n");
 		return;
 	}
@@ -104,7 +106,6 @@ void Stream::stream_video(uint8_t *data, int length) {
 	videoStream->video->loadNextSample(data, length);
 	auto sample_capture = (videoStream->video->getSample());
 	videoStream->video->loadNextTime();
-	
 	
 	for(auto id_client: clients) {
 		auto id = id_client.first;
@@ -132,8 +133,9 @@ void Stream::stream_video(uint8_t *data, int length) {
 			try {
 				// send sample
 				trackData->track->send(sample_capture);
+				// APP_DBG("Sending Video sample with size: %d : success\r\n " ,sample_capture.size());
 			} catch (const std::exception &e) {
-				// APP_DBG("Unable send Video sample : failed\r\n");
+				APP_DBG("Unable send Video sample : failed\r\n");
 			}
 		}
 	}

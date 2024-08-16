@@ -94,10 +94,10 @@ void *gw_task_webrtc_entry(void *) {
 	wait_all_tasks_started();
 
 	string cam_local_id = "server";
-	uint16_t cam_port = 8089;
 	const string sturn_server = "stun:stun.l.google.com:19302";
 
-	APP_DBG("[STARTED] gw_task_webrtc_entry\n");
+	APP_DBG("[STARTED] %s\n", __func__);
+
 	InitLogger(LogLevel::None);
 
 	// Sturn server config
@@ -115,6 +115,7 @@ void *gw_task_webrtc_entry(void *) {
 		switch (msg->header->sig) {
 			case GW_WEBRTC_WEBSOCKET_REQ: {
 				ws_url = std::string((char*)msg->header->payload, msg->header->len);
+				ws_url += "/" + cam_local_id;
 				APP_DBG("Url Websockets : %s\n", ws_url.c_str());
 				websocket_connect(ws, ws_url);
 			} break;
@@ -123,7 +124,6 @@ void *gw_task_webrtc_entry(void *) {
 				if (!ws->isOpen()) {
 					APP_DBG_SIG("GW_WEBRTC_RECONNECT_WEBSOCKET_REG\r\n");
 					ws->open(ws_url);
-					APP_DBG_SIG("WEB SOCKET RECONNECT !\n");
 					timer_set(GW_TASK_WEBRTC_ID,\
 							GW_WEBRTC_RECONNECT_WEBSOCKET_REG,\
 							GW_WEBRTC_RECONNECT_WEBSOCKET_INTERVAL, \
@@ -134,7 +134,7 @@ void *gw_task_webrtc_entry(void *) {
 			case GW_WEBRTC_SET_SIGNALING_WEBSOCKET_REG: {
 				APP_DBG_SIG("GW_WEBRTC_SET_SIGNALING_WEBSOCKET_REG\n");
 				json data = json::parse(string((char *)msg->header->payload, msg->header->len));
-				// APP_DBG("Websockets Send Message : %s\n", data.dump().c_str());
+				APP_DBG("Websockets Send Message : %s\n", data.dump().c_str());
 				ws->send(data.dump());
 			} break;
 
@@ -178,11 +178,10 @@ void *gw_task_webrtc_entry(void *) {
 				}
 				
 			} break;
-			
+
 			default:
 				break;
 		}
-
 		/* free message */
 		ak_msg_free(msg);
 	}
@@ -195,7 +194,7 @@ void websocket_connect(shared_ptr<WebSocket> ws, string url) {
 	ws->onOpen([](){
 		APP_DBG("Connected WebSocket !!\n");
 #if AV_ENABLE == 1
-		task_post_pure_msg(GW_TASK_AV_ID, GW_AV_INIT_REQ);
+		// task_post_pure_msg(GW_TASK_AV_ID, GW_AV_INIT_REQ);
 #endif
 	});
 
@@ -250,14 +249,14 @@ shared_ptr<Client> createPeerConnection(const Configuration &config,
 			4 : FAILED 
 			5 : CLOSE
 		*/
-		cout << "State Peer :" << state << endl;
+		cout << "State Peer :" << state << endl;        
 		if (state == PeerConnection::State::Disconnected ||
 			state == PeerConnection::State::Failed ||
 			state == PeerConnection::State::Closed) {
 			// remove disconnected client
 			clients.erase(id);
 #if AV_ENABLE == 1
-			task_post_pure_msg(GW_TASK_AV_ID, GW_AV_STOP_REQ);
+			// task_post_pure_msg(GW_TASK_AV_ID, GW_AV_STOP_REQ);
 #endif
 		}
 	});

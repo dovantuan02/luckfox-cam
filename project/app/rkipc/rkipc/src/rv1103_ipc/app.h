@@ -61,7 +61,7 @@ enum {
  */
 /*****************************************************************************/
 /* define timer */
-#define GW_RECONNECT_MQTT_INTERVAL			   (5000)
+#define GW_RECONNECT_MQTT_INTERVAL			   (1000)
 /* define signal */
 enum {
     GW_MQTT_CONNECT_REG = AK_USER_DEFINE_SIG,
